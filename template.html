@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fixture Library — DMX Reference</title>
+<meta name="description" content="A searchable database of stage lighting fixtures with DMX modes and channel counts — 697 fixtures across 133 manufacturers, with AI-assisted fixture entry.">
+<meta name="theme-color" content="#0a0a0a">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Fixture Library — DMX Reference">
+<meta property="og:description" content="Searchable stage-lighting fixture database with DMX modes & channel counts. 697 fixtures, 133 manufacturers.">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0a0a'/%3E%3Cg stroke='white' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M16 7v5'/%3E%3Cpath d='M9 10l3 4'/%3E%3Cpath d='M23 10l-3 4'/%3E%3C/g%3E%3Ccircle cx='16' cy='20' r='4.5' fill='white'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#ffffff; --fg:#0a0a0a; --muted:#6b6b6b; --line:#e4e4e4;
+    --chip:#f4f4f4; --chipline:#d8d8d8; --accent:#0a0a0a; --accentfg:#ffffff;
+    --shadow:0 1px 0 rgba(0,0,0,.04);
+  }
+  html[data-theme="dark"]{
+    --bg:#0a0a0a; --fg:#f2f2f2; --muted:#9a9a9a; --line:#242424;
+    --chip:#161616; --chipline:#2c2c2c; --accent:#f2f2f2; --accentfg:#0a0a0a;
+    --shadow:none;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--fg);
+    font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  header{
+    position:sticky; top:0; z-index:20; background:var(--bg);
+    border-bottom:1px solid var(--line);
+  }
+  .wrap{max-width:1080px; margin:0 auto; padding:0 20px}
+  .top{display:flex; align-items:baseline; justify-content:space-between; gap:16px; padding:22px 0 14px}
+  .title{font-size:20px; font-weight:700; letter-spacing:-.02em; margin:0}
+  .title span{color:var(--muted); font-weight:500}
+  .sub{color:var(--muted); font-size:13px; margin:2px 0 0}
+  .themebtn{
+    border:1px solid var(--chipline); background:var(--chip); color:var(--fg);
+    border-radius:999px; padding:6px 12px; font-size:12px; cursor:pointer;
+  }
+  .controls{display:flex; flex-wrap:wrap; gap:10px; padding:0 0 16px; align-items:center}
+  .search{position:relative; flex:1 1 300px; min-width:220px}
+  .search input{
+    width:100%; padding:11px 14px 11px 38px; font-size:15px; color:var(--fg);
+    background:var(--bg); border:1px solid var(--chipline); border-radius:10px; outline:none;
+  }
+  .search input:focus{border-color:var(--accent)}
+  .search svg{position:absolute; left:12px; top:50%; transform:translateY(-50%); opacity:.5}
+  select{
+    padding:10px 12px; font-size:14px; color:var(--fg); background:var(--bg);
+    border:1px solid var(--chipline); border-radius:10px; outline:none; cursor:pointer;
+  }
+  .toggle{display:inline-flex; align-items:center; gap:8px; cursor:pointer; user-select:none;
+    border:1px solid var(--chipline); background:var(--chip); border-radius:10px; padding:9px 12px; font-size:14px}
+  .toggle input{display:none}
+  .dot{width:34px; height:20px; border-radius:999px; background:var(--chipline); position:relative; transition:.15s}
+  .dot::after{content:""; position:absolute; width:16px; height:16px; border-radius:50%; background:var(--bg); top:2px; left:2px; transition:.15s}
+  .toggle input:checked + .dot{background:var(--accent)}
+  .toggle input:checked + .dot::after{left:16px}
+  .count{color:var(--muted); font-size:13px; padding:0 0 14px}
+  main{max-width:1080px; margin:0 auto; padding:18px 20px 80px}
+  .card{
+    border:1px solid var(--line); border-radius:12px; margin:0 0 12px; overflow:hidden; background:var(--bg);
+  }
+  .card.mine{border-color:var(--accent)}
+  .chead{display:flex; align-items:flex-start; gap:12px; padding:14px 16px; cursor:pointer}
+  .chead:hover{background:var(--chip)}
+  .cmeta{flex:1; min-width:0}
+  .cmodel{font-size:16px; font-weight:650; letter-spacing:-.01em}
+  .cmfr{color:var(--muted); font-size:13px; margin-top:1px}
+  .tags{display:flex; flex-wrap:wrap; gap:6px; margin-top:8px}
+  .tag{font-size:11px; padding:3px 8px; border-radius:999px; border:1px solid var(--chipline); background:var(--chip); color:var(--muted); white-space:nowrap}
+  .tag.type{color:var(--fg)}
+  .tag.mine{background:var(--accent); color:var(--accentfg); border-color:var(--accent); font-weight:600}
+  .tag.conf-medium{border-style:dashed}
+  .tag.conf-low{border-style:dotted; opacity:.85}
+  .modes{display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-top:2px}
+  .mode{font-size:12px; font-weight:600; border:1px solid var(--chipline); border-radius:7px; padding:4px 9px; background:var(--bg)}
+  .mode b{font-variant-numeric:tabular-nums}
+  .chev{flex:none; color:var(--muted); transition:transform .15s; margin-top:3px}
+  .card.open .chev{transform:rotate(90deg)}
+  .cbody{display:none; padding:0 16px 16px; border-top:1px solid var(--line)}
+  .card.open .cbody{display:block}
+  .modeblock{margin:14px 0 0}
+  .modeblock h4{margin:0 0 6px; font-size:13px; font-weight:650; display:flex; gap:8px; align-items:baseline}
+  .modeblock h4 span{color:var(--muted); font-weight:500; font-variant-numeric:tabular-nums}
+  .chgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:2px 14px}
+  .ch{display:flex; gap:8px; font-size:12.5px; padding:2px 0; border-bottom:1px dotted var(--line)}
+  .ch i{color:var(--muted); font-style:normal; font-variant-numeric:tabular-nums; min-width:22px; text-align:right}
+  .nodetail{font-size:13px; color:var(--muted); margin-top:12px}
+  .foot{display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin-top:14px; padding-top:12px; border-top:1px solid var(--line); font-size:12px; color:var(--muted)}
+  .foot a{color:var(--fg)}
+  .note{font-size:12.5px; color:var(--muted); margin-top:10px; padding-left:10px; border-left:2px solid var(--chipline)}
+  .vnote{font-size:12.5px; margin-top:10px; padding:8px 10px; background:var(--chip); border-radius:8px; border:1px solid var(--chipline)}
+  .empty{text-align:center; color:var(--muted); padding:60px 0}
+  .unv{margin-top:40px; border-top:1px solid var(--line); padding-top:20px}
+  .unv h3{font-size:14px; margin:0 0 4px}
+  .unv p{font-size:12.5px; color:var(--muted); margin:0 0 12px}
+  .unv li{font-size:13px; margin:4px 0}
+  .kb{font-size:11px; color:var(--muted); border:1px solid var(--chipline); border-radius:5px; padding:1px 5px; background:var(--chip)}
+  mark{background:var(--accent); color:var(--accentfg); border-radius:2px; padding:0 1px}
+  .btn{border:1px solid var(--accent); background:var(--accent); color:var(--accentfg); border-radius:10px; padding:10px 14px; font-size:14px; font-weight:600; cursor:pointer; white-space:nowrap}
+  .btn.ghost{background:var(--bg); color:var(--fg)}
+  .btn:hover{opacity:.9}
+  .delbtn{border:1px solid var(--chipline); background:var(--bg); color:var(--fg); border-radius:8px; padding:5px 11px; font-size:12px; cursor:pointer}
+  .delbtn:hover{border-color:var(--fg)}
+  .tag.added{background:var(--bg); color:var(--fg); border:1px solid var(--accent); border-style:dashed; font-weight:600}
+  .overlay{position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:flex-start; justify-content:center; z-index:50; padding:40px 16px; overflow:auto}
+  html[data-theme="dark"] .overlay{background:rgba(0,0,0,.65)}
+  .overlay.show{display:flex}
+  .modal{background:var(--bg); border:1px solid var(--line); border-radius:14px; width:100%; max-width:540px; padding:22px; box-shadow:0 20px 60px rgba(0,0,0,.25)}
+  .modal h2{margin:0 0 4px; font-size:18px}
+  .modal .mh{color:var(--muted); font-size:13px; margin:0 0 16px}
+  .field{margin:0 0 13px}
+  .field label{display:block; font-size:12px; font-weight:600; color:var(--muted); margin:0 0 5px; text-transform:uppercase; letter-spacing:.03em}
+  .field input, .field select{width:100%; padding:10px 12px; font-size:15px; color:var(--fg); background:var(--bg); border:1px solid var(--chipline); border-radius:9px; outline:none}
+  .field input:focus, .field select:focus{border-color:var(--accent)}
+  .row2{display:flex; gap:8px}
+  .moderow{display:flex; gap:8px; margin:0 0 8px; align-items:center}
+  .moderow input.mname{flex:1}
+  .moderow input.mcount{width:96px}
+  .moderow .rm{border:1px solid var(--chipline); background:var(--bg); color:var(--muted); border-radius:8px; width:34px; height:38px; cursor:pointer; font-size:16px; flex:none}
+  .moderow .rm:hover{color:var(--fg); border-color:var(--fg)}
+  .addmode{border:1px dashed var(--chipline); background:var(--bg); color:var(--fg); border-radius:8px; padding:8px 12px; font-size:13px; cursor:pointer; width:100%}
+  .addmode:hover{border-color:var(--accent)}
+  .err{color:var(--fg); background:var(--chip); border:1px solid var(--chipline); border-radius:8px; padding:8px 10px; font-size:13px; margin:0 0 12px; display:none}
+  .err.show{display:block}
+  .modActions{display:flex; gap:8px; justify-content:flex-end; margin-top:18px}
+  .modhead{display:flex; align-items:flex-start; justify-content:space-between; gap:12px}
+  .aifill{border:1px solid var(--accent); background:var(--accent); color:var(--accentfg); border-radius:9px; padding:9px 12px; font-size:13px; font-weight:600; cursor:pointer; width:100%; margin-top:6px}
+  .aifill:hover{opacity:.9}
+  .aifill:disabled{opacity:.5; cursor:default}
+  .gear{border:1px solid var(--chipline); background:var(--chip); color:var(--fg); border-radius:8px; padding:5px 10px; font-size:12px; cursor:pointer; white-space:nowrap; flex:none}
+  .aiset{display:none; margin:4px 0 14px; padding:12px; border:1px solid var(--chipline); border-radius:10px; background:var(--chip)}
+  .aiset.show{display:block}
+  .aiset .field{margin-bottom:10px}
+  .aiset .hint{font-size:11.5px; color:var(--muted); margin:6px 0 0; line-height:1.45}
+  .aibanner{display:none; margin:10px 0 2px; padding:9px 11px; border-radius:9px; font-size:12.5px; border:1px solid var(--chipline); background:var(--chip)}
+  .aibanner.show{display:block}
+  .aibanner b{font-weight:650}
+  .aibanner a{color:var(--fg)}
+  .rigadd{display:flex; gap:8px; align-items:center; margin-top:14px; flex-wrap:wrap; padding-top:12px; border-top:1px dashed var(--chipline)}
+  .rigadd select{flex:1 1 150px; min-width:130px}
+  .rigadd .ra_qty{width:66px; padding:9px 10px; font-size:14px; color:var(--fg); background:var(--bg); border:1px solid var(--chipline); border-radius:9px; outline:none}
+  .rigadd .ra_btn{padding:9px 13px; font-size:13px}
+  .rigmodal{max-width:680px}
+  .rigbar{display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:14px}
+  .rigbar select{flex:1 1 180px; min-width:150px}
+  .rigtable{width:100%; border-collapse:collapse; font-size:13.5px}
+  .rigtable th{text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.03em; color:var(--muted); border-bottom:1px solid var(--line); padding:7px 8px; font-weight:600}
+  .rigtable td{border-bottom:1px solid var(--line); padding:9px 8px; vertical-align:middle}
+  .rigtable .qin{width:62px; padding:6px 8px; border:1px solid var(--chipline); border-radius:7px; background:var(--bg); color:var(--fg); outline:none; font-size:13.5px}
+  .rigtable .qin:focus{border-color:var(--accent)}
+  .rigtotals{display:flex; gap:22px; flex-wrap:wrap; margin-top:16px; padding-top:14px; border-top:1px solid var(--line); font-variant-numeric:tabular-nums}
+  .rigtotals b{font-size:22px; font-weight:700; letter-spacing:-.02em}
+  .rigtotals .lbl{color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.03em; display:block; margin-bottom:1px}
+  @media(max-width:560px){ .modal{padding:18px} }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <h1 class="title">Fixture Library <span>· DMX Reference</span></h1>
+        <p class="sub" id="sub"></p>
+      </div>
+      <button class="themebtn" id="theme">◐ Theme</button>
+    </div>
+    <div class="controls">
+      <label class="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input id="q" type="search" placeholder="Search model or manufacturer…" autocomplete="off">
+      </label>
+      <select id="mfr"></select>
+      <select id="type"></select>
+      <label class="toggle"><input type="checkbox" id="mine"><span class="dot"></span>My gear</label>
+      <button class="btn" id="rigsbtn">Rigs</button>
+      <button class="btn ghost" id="add">+ Add fixture</button>
+      <button class="btn ghost" id="export" title="Download your added fixtures as data">Export</button>
+    </div>
+    <div class="count wrap" style="padding-left:0;padding-right:0"><span id="count"></span></div>
+  </div>
+</header>
+<main>
+  <div id="list"></div>
+  <div class="unv" id="unv"></div>
+  <footer style="margin-top:40px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font-size:12px;line-height:1.6">
+    Fixture Library — DMX reference. Verified data from the Open Fixture Library and manufacturer DMX charts;
+    fixtures you add (and AI drafts) are marked as such and saved in your browser. Always confirm channel maps against the manual before a show.
+  </footer>
+</main>
+
+<div class="overlay" id="overlay">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modhead">
+      <div>
+        <h2>Add a fixture</h2>
+        <p class="mh">Adds to your library and flags it as your gear. Saved in this browser between visits.</p>
+      </div>
+      <button class="gear" id="aigear" type="button">⚙ AI key</button>
+    </div>
+    <div class="aiset" id="aiset">
+      <div class="field">
+        <label>Anthropic API key</label>
+        <input id="ai_key" type="password" placeholder="sk-ant-…" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>Model</label>
+        <input id="ai_model" type="text" placeholder="claude-3-5-sonnet-latest" autocomplete="off">
+      </div>
+      <div class="modActions" style="margin-top:4px">
+        <button class="btn ghost" id="ai_save" type="button">Save key</button>
+      </div>
+      <p class="hint">Stored only in this browser (localStorage), never sent anywhere but Anthropic. Get a key at console.anthropic.com. If you get a model error, change the model to one your account supports.</p>
+    </div>
+    <div class="err" id="err"></div>
+    <div class="field">
+      <label>Manufacturer</label>
+      <input id="f_mfr" list="mfrlist" placeholder="e.g. Robe" autocomplete="off">
+      <datalist id="mfrlist"></datalist>
+    </div>
+    <div class="field">
+      <label>Model</label>
+      <input id="f_model" placeholder="e.g. Robin Tetra2" autocomplete="off">
+      <button class="aifill" id="aifill" type="button">✨ AI Fill — draft type &amp; DMX modes from the name</button>
+      <div class="aibanner" id="aibanner"></div>
+    </div>
+    <div class="field">
+      <label>Type</label>
+      <select id="f_type"></select>
+    </div>
+    <div class="field">
+      <label>DMX modes</label>
+      <div id="moderows"></div>
+      <button class="addmode" id="addmode" type="button">+ Add another mode</button>
+    </div>
+    <div class="modActions">
+      <button class="btn ghost" id="cancel" type="button">Cancel</button>
+      <button class="btn" id="save" type="button">Save fixture</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="rigoverlay">
+  <div class="modal rigmodal" role="dialog" aria-modal="true">
+    <div class="modhead">
+      <div>
+        <h2>Rigs</h2>
+        <p class="mh">Saved fixture lists — like carts — with live DMX totals. Stored in this browser.</p>
+      </div>
+      <button class="gear" id="rigclose" type="button">✕ Close</button>
+    </div>
+    <div class="rigbar">
+      <select id="rigsel" aria-label="Active rig"></select>
+      <button class="gear" id="rignew" type="button">＋ New</button>
+      <button class="gear" id="rigrename" type="button">Rename</button>
+      <button class="gear" id="rigdup" type="button">Duplicate</button>
+      <button class="gear" id="rigdel" type="button">Delete</button>
+    </div>
+    <div id="rigbody"></div>
+    <div class="rigtotals" id="rigtotals"></div>
+    <div class="modActions">
+      <button class="btn ghost" id="rigexport" type="button">Export CSV</button>
+      <button class="btn" id="rigdone" type="button">Done</button>
+    </div>
+  </div>
+</div>
+<script>
+const DATA = __DATA__;
+const $ = s => document.querySelector(s);
+const LSKEY = 'fixtureLibrary.userAdded.v1';
+const BASE_TYPES = [...new Set(DATA.fixtures.map(f=>f.type))].sort();
+
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+
+// user-added fixtures (persisted in this browser when possible)
+function loadUser(){ try{ return JSON.parse(localStorage.getItem(LSKEY)||'[]'); }catch(e){ return []; } }
+function saveUser(){ try{ localStorage.setItem(LSKEY, JSON.stringify(userAdded)); }catch(e){} }
+let userAdded = loadUser();
+
+// F = user-added first, then the built-in library
+let F = [];
+let fmap = {};
+function rebuild(){ F = userAdded.concat(DATA.fixtures); fmap = {}; F.forEach(f=>{ fmap[f.mfr+'|'+f.model]=f; }); }
+rebuild();
+
+// build filter options (recomputed so newly added manufacturers appear)
+function buildFilters(){
+  const mfrs = [...new Set(F.map(f=>f.mfr))].sort((a,b)=>a.toLowerCase()<b.toLowerCase()?-1:1);
+  const types = [...new Set(F.map(f=>f.type))].sort();
+  const curM=$('#mfr').value, curT=$('#type').value;
+  $('#mfr').innerHTML = '<option value="">All manufacturers</option>' + mfrs.map(m=>`<option ${m===curM?'selected':''}>${esc(m)}</option>`).join('');
+  $('#type').innerHTML = '<option value="">All types</option>' + types.map(t=>`<option ${t===curT?'selected':''}>${esc(t)}</option>`).join('');
+  $('#mfrlist').innerHTML = mfrs.map(m=>`<option value="${esc(m)}">`).join('');
+  const total = F.length, mine = F.filter(f=>f.mine).length;
+  const added = userAdded.length ? ` · ${userAdded.length} you added` : '';
+  $('#sub').textContent = `${total} fixtures · ${mine} on your list · ${mfrs.length} manufacturers${added}`;
+}
+buildFilters();
+function hl(s,q){ s=esc(s); if(!q) return s; try{const r=new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','ig'); return s.replace(r,'<mark>$1</mark>')}catch(e){return s} }
+
+const state = {q:'', mfr:'', type:'', mine:false};
+let openSet = new Set();
+
+function render(){
+  const q = state.q.trim().toLowerCase();
+  let rows = F.filter(f=>{
+    if(state.mfr && f.mfr!==state.mfr) return false;
+    if(state.type && f.type!==state.type) return false;
+    if(state.mine && !f.mine) return false;
+    if(q){ const hay=(f.mfr+' '+f.model+' '+f.type).toLowerCase(); if(!hay.includes(q)) return false; }
+    return true;
+  });
+  $('#count').textContent = `${rows.length} ${rows.length===1?'fixture':'fixtures'}`
+     + (state.mine?' on your list':'') + (rows.length!==F.length?` (of ${F.length})`:'');
+
+  const list = $('#list');
+  if(!rows.length){ list.innerHTML = '<div class="empty">No fixtures match. Try clearing a filter.</div>'; return; }
+  const qraw = state.q.trim();
+  const CAP = 250;
+  const shown = rows.slice(0, CAP);
+  const moreNote = rows.length > CAP
+    ? `<div class="empty" style="padding:26px 0 8px">Showing the first ${CAP} of ${rows.length}. Search or filter to narrow it down.</div>` : '';
+  list.innerHTML = shown.map((f,i)=>{
+    const id = f.mfr+'|'+f.model;
+    const open = openSet.has(id);
+    const modesInline = f.modes.map(m=>`<span class="mode">${esc(m.name)} · <b>${m.count}ch</b></span>`).join('');
+    const confTag = (f.confidence!=='high' && (!f.userAdded || f.aiGenerated)) ? `<span class="tag conf-${f.confidence}">${f.confidence} confidence</span>` : '';
+    const mineTag = f.mine ? '<span class="tag mine">My gear</span>' : '';
+    const srcLabel = f.source==='Open Fixture Library'?'OFL verified':(f.source==='QLC+ library'?'QLC+ library':'Mfr. spec');
+    const srcTag = f.aiGenerated ? '<span class="tag added">AI draft — verify</span>'
+      : f.userAdded ? '<span class="tag added">Added by you</span>'
+      : `<span class="tag">${srcLabel}</span>`;
+    const rigModeOpts = f.modes.map((m,mi)=>`<option value="${mi}">${esc(m.name)} · ${m.count}ch</option>`).join('');
+    return `<div class="card ${f.mine?'mine':''} ${open?'open':''}" data-id="${esc(id)}">
+      <div class="chead" data-toggle>
+        <div class="cmeta">
+          <div class="cmodel">${hl(f.model,qraw)}</div>
+          <div class="cmfr">${hl(f.mfr,qraw)}</div>
+          <div class="tags">${mineTag}<span class="tag type">${esc(f.type)}</span>${srcTag}${confTag}</div>
+        </div>
+        <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+      <div class="cbody">
+        <div class="modes" style="margin-top:14px">${modesInline}</div>
+        <div class="rigadd">
+          <select class="ra_mode" aria-label="DMX mode to add">${rigModeOpts}</select>
+          <input class="ra_qty" type="number" min="1" value="1" aria-label="Quantity">
+          <button class="btn ra_btn" data-add="${esc(id)}">Add to rig</button>
+        </div>
+        ${bodyDetail(f)}
+        ${f.vaultNote?`<div class="vnote">📌 ${esc(f.vaultNote)}</div>`:''}
+        ${f.note?`<div class="note">${esc(f.note)}</div>`:''}
+        <div class="foot">
+          ${f.sourceUrl?`<a href="${esc(f.sourceUrl)}" target="_blank" rel="noopener">Source ↗</a>`:''}
+          <span>${f.userAdded?'Added by you':(f.source==='Open Fixture Library'?'Community-verified (Open Fixture Library)':(f.source==='QLC+ library'?'Community-maintained (QLC+ fixture library) — verify against the manual':'Manufacturer DMX chart / manual'))}</span>
+          ${f.userAdded?`<button class="delbtn" data-del="${esc(f.mfr+'|'+f.model)}">Remove</button>`:''}
+        </div>
+      </div>
+    </div>`;
+  }).join('') + moreNote;
+}
+
+function bodyDetail(f){
+  if(f.hasChannelDetail){
+    return f.modes.map(m=>{
+      if(!m.channels||!m.channels.length) return '';
+      const chs = m.channels.map((c,idx)=>`<div class="ch"><i>${idx+1}</i><span>${esc(c)}</span></div>`).join('');
+      return `<div class="modeblock"><h4>${esc(m.name)} <span>${m.count} channels</span></h4><div class="chgrid">${chs}</div></div>`;
+    }).join('');
+  }
+  return `<div class="nodetail">Mode footprints shown above. Full channel-by-channel map isn't bundled for this fixture — open the manufacturer chart via the source link for the exact per-channel layout.</div>`;
+}
+
+// unverified section
+$('#unv').innerHTML = `<h3>Couldn't verify (${DATA.unverified.length})</h3>
+  <p>On your vault list but not confirmable as real products — worth a second look:</p>
+  <ul>${DATA.unverified.map(u=>`<li><b>${esc(u.mfr)} ${esc(u.model)}</b> — ${esc(u.note)}</li>`).join('')}</ul>`;
+
+// events
+$('#q').addEventListener('input', e=>{state.q=e.target.value; render()});
+$('#mfr').addEventListener('change', e=>{state.mfr=e.target.value; render()});
+$('#type').addEventListener('change', e=>{state.type=e.target.value; render()});
+$('#mine').addEventListener('change', e=>{state.mine=e.target.checked; render()});
+$('#list').addEventListener('click', e=>{
+  const head = e.target.closest('[data-toggle]'); if(!head) return;
+  const card = head.closest('.card'); const id=card.dataset.id;
+  if(openSet.has(id)) openSet.delete(id); else openSet.add(id);
+  card.classList.toggle('open');
+});
+$('#list').addEventListener('click', e=>{
+  const del = e.target.closest('[data-del]'); if(!del) return;
+  e.stopPropagation();
+  const id = del.getAttribute('data-del');
+  const idx = userAdded.findIndex(f=>(f.mfr+'|'+f.model)===id);
+  if(idx>-1 && confirm('Remove this fixture from your library?')){
+    userAdded.splice(idx,1); saveUser(); rebuild(); buildFilters(); render();
+  }
+});
+// theme
+const root=document.documentElement;
+$('#theme').addEventListener('click',()=>{ root.dataset.theme = root.dataset.theme==='dark'?'':'dark'; });
+
+/* ---------- Add fixture modal ---------- */
+function typeOptions(){
+  return BASE_TYPES.map(t=>`<option>${esc(t)}</option>`).join('') + '<option value="__other">Other…</option>';
+}
+function modeRow(name='', count=''){
+  const div=document.createElement('div'); div.className='moderow';
+  div.innerHTML = `<input class="mname" placeholder="Mode name (e.g. Standard)" value="${esc(name)}">
+    <input class="mcount" type="number" min="1" max="512" placeholder="ch" value="${esc(count)}">
+    <button class="rm" type="button" title="Remove mode">×</button>`;
+  div.querySelector('.rm').addEventListener('click',()=>{ if($('#moderows').children.length>1) div.remove(); });
+  return div;
+}
+function openModal(){
+  $('#f_mfr').value=''; $('#f_model').value='';
+  $('#f_type').innerHTML = typeOptions();
+  const mr=$('#moderows'); mr.innerHTML=''; mr.appendChild(modeRow());
+  $('#err').classList.remove('show'); $('#err').textContent='';
+  $('#aibanner').classList.remove('show'); $('#aibanner').innerHTML='';
+  $('#aiset').classList.remove('show');
+  $('#ai_key').value = getKey(); $('#ai_model').value = getModel();
+  aiMeta = null;
+  $('#overlay').classList.add('show'); $('#f_mfr').focus();
+}
+function closeModal(){ $('#overlay').classList.remove('show'); }
+function showErr(m){ const e=$('#err'); e.textContent=m; e.classList.add('show'); }
+
+$('#add').addEventListener('click', openModal);
+$('#cancel').addEventListener('click', closeModal);
+$('#overlay').addEventListener('click', e=>{ if(e.target===$('#overlay')) closeModal(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeModal(); closeRig(); } });
+$('#addmode').addEventListener('click', ()=> $('#moderows').appendChild(modeRow()));
+$('#f_type').addEventListener('change', function(){
+  if(this.value==='__other'){
+    const v=(prompt('New fixture type:','')||'').trim();
+    if(v){ const o=document.createElement('option'); o.textContent=v; o.selected=true; this.insertBefore(o,this.lastChild); }
+    else { this.value = BASE_TYPES[0]; }
+  }
+});
+
+$('#save').addEventListener('click', ()=>{
+  const mfr=$('#f_mfr').value.trim(), model=$('#f_model').value.trim();
+  let type=$('#f_type').value; if(type==='__other'||!type) type='Other';
+  if(!mfr){ showErr('Enter a manufacturer.'); return; }
+  if(!model){ showErr('Enter a model.'); return; }
+  const modes=[];
+  $('#moderows').querySelectorAll('.moderow').forEach(r=>{
+    const c=parseInt(r.querySelector('.mcount').value,10);
+    let n=r.querySelector('.mname').value.trim();
+    if(c>0){ if(!n) n=c+'-channel'; modes.push({name:n,count:c,channels:null}); }
+  });
+  if(!modes.length){ showErr('Add at least one mode with a channel count.'); return; }
+  const id=mfr+'|'+model;
+  if(F.some(f=>(f.mfr+'|'+f.model)===id)){ showErr('A fixture with that manufacturer + model already exists.'); return; }
+  const ai = aiMeta;
+  userAdded.unshift({mfr,model,type,cats:[type],modes,mine:true,
+    source: ai?'Added by you (AI draft)':'Added by you',
+    sourceUrl: ai?ai.manualUrl:null,
+    confidence: ai?ai.confidence:'high',
+    note: ai?('AI-generated — verify against the manual.'+(ai.notes?' '+ai.notes:'')):'',
+    vaultNote:'', hasChannelDetail:false, userAdded:true, aiGenerated: !!ai});
+  saveUser(); rebuild(); buildFilters(); closeModal();
+  openSet.add(id); state.q=''; $('#q').value=''; render();
+  const card=document.querySelector(`.card[data-id="${CSS.escape(id)}"]`);
+  if(card) card.scrollIntoView({behavior:'smooth',block:'center'});
+});
+
+/* ---------- AI autofill (Anthropic, bring-your-own-key) ---------- */
+const AIKEY='fixtureLibrary.aiKey', AIMODEL='fixtureLibrary.aiModel';
+let aiMeta = null;
+function getKey(){ try{return localStorage.getItem(AIKEY)||''}catch(e){return ''} }
+function getModel(){ try{return localStorage.getItem(AIMODEL)||'claude-3-5-sonnet-latest'}catch(e){return 'claude-3-5-sonnet-latest'} }
+$('#aigear').addEventListener('click',()=> $('#aiset').classList.toggle('show'));
+$('#ai_save').addEventListener('click',()=>{
+  try{
+    localStorage.setItem(AIKEY, $('#ai_key').value.trim());
+    localStorage.setItem(AIMODEL, ($('#ai_model').value.trim()||'claude-3-5-sonnet-latest'));
+  }catch(e){}
+  $('#aiset').classList.remove('show');
+});
+function aiBanner(html){ const b=$('#aibanner'); b.innerHTML=html; b.classList.add('show'); }
+
+async function aiFill(){
+  const mfr=$('#f_mfr').value.trim(), model=$('#f_model').value.trim();
+  if(!model){ showErr('Type a model name first, then AI Fill.'); return; }
+  const key=getKey();
+  if(!key){ $('#aiset').classList.add('show'); $('#ai_key').focus(); showErr('Add your Anthropic API key first (⚙ AI key).'); return; }
+  const btn=$('#aifill'); const label=btn.textContent;
+  btn.disabled=true; btn.textContent='✨ Thinking…'; $('#err').classList.remove('show');
+  $('#aibanner').classList.remove('show');
+  const allowed = BASE_TYPES.join(', ');
+  const sys = "You are a precise stage-lighting fixture database. Given a manufacturer and model, return ONLY a single valid JSON object (no markdown, no prose) describing the fixture's real DMX modes and TOTAL channel count per mode, using your knowledge of the manufacturer's DMX chart. If you are not confident of a value, set confidence to \"low\" and say why in notes. Never invent a fixture that doesn't exist — if unknown, set modes to [] and confidence \"low\". Schema: {\"manufacturer\":string,\"model\":string,\"type\":string,\"modes\":[{\"name\":string,\"count\":integer}],\"manualUrl\":string,\"confidence\":\"high\"|\"medium\"|\"low\",\"notes\":string}. The \"type\" must be exactly one of: "+allowed+".";
+  const usr = "Manufacturer: "+(mfr||"(unknown — infer from model)")+"\nModel: "+model;
+  try{
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body: JSON.stringify({model:getModel(), max_tokens:1024, temperature:0, system:sys, messages:[{role:'user',content:usr}]})
+    });
+    if(!res.ok){ let t=await res.text(); let m=t; try{m=JSON.parse(t).error.message||t}catch(e){} throw new Error('API '+res.status+': '+m.slice(0,180)); }
+    const data = await res.json();
+    let txt = (data.content&&data.content[0]&&data.content[0].text||'').trim();
+    txt = txt.replace(/^```(?:json)?/i,'').replace(/```$/,'').trim();
+    const g = JSON.parse(txt);
+    // populate
+    if(mfr==='' && g.manufacturer) $('#f_mfr').value=g.manufacturer;
+    if(g.type){ const opts=[...$('#f_type').options].map(o=>o.value);
+      if(!opts.includes(g.type)){ const o=document.createElement('option'); o.textContent=g.type; $('#f_type').insertBefore(o,$('#f_type').lastChild); }
+      $('#f_type').value=g.type; }
+    const mr=$('#moderows'); mr.innerHTML='';
+    const modes=(g.modes||[]).filter(m=>m&&+m.count>0);
+    if(modes.length){ modes.forEach(m=>mr.appendChild(modeRow(m.name||'',m.count))); }
+    else { mr.appendChild(modeRow()); }
+    aiMeta = {manualUrl:g.manualUrl||null, confidence:g.confidence||'low', notes:g.notes||''};
+    const conf=(g.confidence||'low');
+    const warn = conf==='high' ? 'Double-check against the manual before a show.' : 'Treat as a rough draft — verify every channel count against the manual.';
+    aiBanner('<b>AI-generated draft ('+esc(conf)+' confidence).</b> '+esc(warn)
+      + (g.notes?'<br>'+esc(g.notes):'')
+      + (g.manualUrl?'<br><a href="'+esc(g.manualUrl)+'" target="_blank" rel="noopener">Manufacturer manual ↗</a>':'')
+      + (modes.length?'':'<br>No modes returned — the AI wasn\'t sure this fixture exists. Enter modes manually.'));
+  }catch(err){
+    showErr('AI Fill failed — '+err.message);
+  }finally{
+    btn.disabled=false; btn.textContent=label;
+  }
+}
+$('#aifill').addEventListener('click', aiFill);
+
+/* ---------- Rig builder ---------- */
+const RIGKEY='fixtureLibrary.rigs.v1';
+let rigState = loadRigs();
+function loadRigs(){ try{ const r=JSON.parse(localStorage.getItem(RIGKEY)); if(r&&Array.isArray(r.rigs)) return r; }catch(e){} return {activeId:null, rigs:[]}; }
+function saveRigs(){ try{ localStorage.setItem(RIGKEY, JSON.stringify(rigState)); }catch(e){} }
+function uid(){ return 'r'+Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-4); }
+function ensureRig(){
+  if(!rigState.rigs.length){ const id=uid(); rigState.rigs.push({id,name:'My Rig',items:[]}); rigState.activeId=id; saveRigs(); }
+  if(!rigState.rigs.find(r=>r.id===rigState.activeId)) rigState.activeId=rigState.rigs[0].id;
+  return rigState.rigs.find(r=>r.id===rigState.activeId);
+}
+function rigTotals(rig){ let fx=0,ch=0; rig.items.forEach(it=>{fx+=it.qty; ch+=it.qty*it.count;}); return {fixtures:fx, channels:ch, universes:Math.ceil(ch/512), lines:rig.items.length}; }
+function updateRigBtn(){ const rig=ensureRig(); const t=rigTotals(rig); $('#rigsbtn').textContent = t.fixtures ? `Rigs · ${rig.name} (${t.fixtures})` : 'Rigs'; }
+function addToRig(f, mode, qty){
+  const rig=ensureRig();
+  const key=f.mfr+'|'+f.model+'|'+mode.name;
+  const ex=rig.items.find(it=>it.key===key);
+  if(ex){ ex.qty += qty; } else { rig.items.push({key, mfr:f.mfr, model:f.model, type:f.type, modeName:mode.name, count:mode.count, qty}); }
+  saveRigs(); updateRigBtn();
+}
+function totalsHTML(t){ return `<div><span class="lbl">Fixtures</span><b>${t.fixtures}</b></div>
+    <div><span class="lbl">DMX channels</span><b>${t.channels}</b></div>
+    <div><span class="lbl">Universes (512)</span><b>${t.universes}</b></div>`; }
+function renderRigModal(){
+  const rig=ensureRig();
+  $('#rigsel').innerHTML = rigState.rigs.map(r=>`<option value="${esc(r.id)}" ${r.id===rig.id?'selected':''}>${esc(r.name)} · ${rigTotals(r).fixtures} fx</option>`).join('');
+  const body=$('#rigbody');
+  if(!rig.items.length){
+    body.innerHTML = `<div class="empty" style="padding:34px 0">“${esc(rig.name)}” is empty.<br><span style="font-size:12.5px">Add fixtures from the list — expand a fixture and use <b>Add to rig</b>.</span></div>`;
+  } else {
+    const rows = rig.items.map((it,i)=>`<tr>
+      <td><div style="font-weight:600">${esc(it.model)}</div><div style="color:var(--muted);font-size:12px">${esc(it.mfr)} · ${esc(it.modeName)} · ${it.count}ch</div></td>
+      <td><input class="qin" type="number" min="1" value="${it.qty}" data-qty="${i}" aria-label="Quantity"></td>
+      <td style="text-align:right;font-variant-numeric:tabular-nums">${it.qty*it.count}</td>
+      <td style="text-align:right"><button class="delbtn" data-rigrm="${i}">Remove</button></td>
+    </tr>`).join('');
+    body.innerHTML = `<table class="rigtable"><thead><tr><th>Fixture / mode</th><th>Qty</th><th style="text-align:right">Channels</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+  }
+  $('#rigtotals').innerHTML = totalsHTML(rigTotals(rig));
+}
+function openRig(){ renderRigModal(); $('#rigoverlay').classList.add('show'); }
+function closeRig(){ $('#rigoverlay').classList.remove('show'); }
+$('#rigsbtn').addEventListener('click', openRig);
+$('#rigclose').addEventListener('click', closeRig);
+$('#rigdone').addEventListener('click', closeRig);
+$('#rigoverlay').addEventListener('click', e=>{ if(e.target===$('#rigoverlay')) closeRig(); });
+$('#rigsel').addEventListener('change', e=>{ rigState.activeId=e.target.value; saveRigs(); updateRigBtn(); renderRigModal(); });
+$('#rignew').addEventListener('click', ()=>{ const n=(prompt('Name for the new rig:','Rig '+(rigState.rigs.length+1))||'').trim(); if(!n) return; const id=uid(); rigState.rigs.push({id,name:n,items:[]}); rigState.activeId=id; saveRigs(); updateRigBtn(); renderRigModal(); });
+$('#rigrename').addEventListener('click', ()=>{ const rig=ensureRig(); const n=(prompt('Rename rig:',rig.name)||'').trim(); if(!n) return; rig.name=n; saveRigs(); updateRigBtn(); renderRigModal(); });
+$('#rigdup').addEventListener('click', ()=>{ const rig=ensureRig(); const id=uid(); rigState.rigs.push({id,name:rig.name+' copy',items:JSON.parse(JSON.stringify(rig.items))}); rigState.activeId=id; saveRigs(); updateRigBtn(); renderRigModal(); });
+$('#rigdel').addEventListener('click', ()=>{ const rig=ensureRig(); if(!confirm('Delete rig “'+rig.name+'”? This cannot be undone.')) return; rigState.rigs=rigState.rigs.filter(r=>r.id!==rig.id); rigState.activeId=rigState.rigs[0]?rigState.rigs[0].id:null; saveRigs(); updateRigBtn(); renderRigModal(); });
+$('#rigbody').addEventListener('input', e=>{
+  const q=e.target.closest('[data-qty]'); if(!q) return;
+  const rig=ensureRig(); const i=+q.getAttribute('data-qty');
+  let v=parseInt(q.value,10); if(!(v>0)) v=1;
+  rig.items[i].qty=v; saveRigs();
+  const tr=q.closest('tr'); if(tr){ const cells=tr.querySelectorAll('td'); if(cells[2]) cells[2].textContent=v*rig.items[i].count; }
+  $('#rigtotals').innerHTML = totalsHTML(rigTotals(rig)); updateRigBtn();
+});
+$('#rigbody').addEventListener('click', e=>{
+  const rm=e.target.closest('[data-rigrm]'); if(!rm) return;
+  const rig=ensureRig(); rig.items.splice(+rm.getAttribute('data-rigrm'),1); saveRigs(); updateRigBtn(); renderRigModal();
+});
+$('#rigexport').addEventListener('click', ()=>{
+  const rig=ensureRig(); const t=rigTotals(rig);
+  const q=x=>`"${String(x==null?'':x).replace(/"/g,'""')}"`;
+  let csv='Manufacturer,Model,Type,Mode,Channels per unit,Qty,Total channels\n';
+  rig.items.forEach(it=>{ csv+=[it.mfr,it.model,it.type,it.modeName,it.count,it.qty,it.qty*it.count].map(q).join(',')+'\n'; });
+  csv+='\nTotals,,,,,'+q(t.fixtures+' fixtures')+','+q(t.channels+' channels / '+t.universes+' universes')+'\n';
+  const blob=new Blob([csv],{type:'text/csv'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download=(rig.name.replace(/[^a-z0-9]+/gi,'-').replace(/^-|-$/g,'')||'rig')+'.csv'; a.click(); URL.revokeObjectURL(a.href);
+});
+// add-to-rig from a fixture card
+$('#list').addEventListener('click', e=>{
+  const b=e.target.closest('[data-add]'); if(!b) return;
+  const f=fmap[b.getAttribute('data-add')]; if(!f) return;
+  const card=b.closest('.card');
+  const mi=parseInt(card.querySelector('.ra_mode').value,10)||0;
+  let qty=parseInt(card.querySelector('.ra_qty').value,10); if(!(qty>0)) qty=1;
+  addToRig(f, f.modes[mi]||f.modes[0], qty);
+  const orig=b.textContent; b.textContent='Added ✓'; b.disabled=true;
+  setTimeout(()=>{ b.textContent=orig; b.disabled=false; }, 850);
+});
+
+/* ---------- Export ---------- */
+$('#export').addEventListener('click', ()=>{
+  const payload={generated:new Date().toISOString().slice(0,10), yourAddedFixtures:userAdded,
+    fullLibrary:F.map(f=>({mfr:f.mfr,model:f.model,type:f.type,mine:f.mine,source:f.source,
+      modes:f.modes.map(m=>({name:m.name,count:m.count}))}))};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='fixture-library-export.json'; a.click(); URL.revokeObjectURL(a.href);
+});
+
+updateRigBtn();
+render();
+</script>
+</body>
+</html>
