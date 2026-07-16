@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-# Rebuilds index.html from a frozen base app (index_2.html) plus custom
-# additions in new-fixtures.json. Runs in GitHub Actions; no deps beyond stdlib.
+# Rebuilds index.html = template.html (the app shell) with data injected from the
+# frozen base app (index_2.html) plus custom additions in new-fixtures.json.
+# Runs in GitHub Actions; no deps beyond the standard library.
 import json, re, sys, os
 
-BASE = 'index_2.html'      # frozen base app carrying the bulk library
-OUT  = 'index.html'        # generated full app served by Pages
-ADDS = 'new-fixtures.json' # small list of custom additions (the "inbox")
+BASE = 'index_2.html'       # frozen base app — data source (bulk library)
+TEMPLATE = 'template.html'  # app shell with a __DATA__ placeholder (the UI)
+OUT = 'index.html'          # generated full app served by Pages
+ADDS = 'new-fixtures.json'  # small list of custom additions (the "inbox")
 
 def norm(s):
     s = (s or '').lower()
@@ -16,9 +18,7 @@ def extract(html):
     m = re.search(r'const DATA = (.*?);\nconst \$', html, re.S)
     if not m:
         return None, None
-    payload = m.group(1)
-    data = json.loads(payload.replace('<\\/', '</'))
-    return m, data
+    return m, json.loads(m.group(1).replace('<\\/', '</'))
 
 def normalize_entry(nf):
     t = nf.get('type', 'Other')
@@ -36,8 +36,8 @@ def normalize_entry(nf):
 def main():
     if not os.path.exists(BASE):
         print('ERROR: base app %s not found' % BASE); sys.exit(1)
-    html = open(BASE, encoding='utf-8').read()
-    m, data = extract(html)
+    base_html = open(BASE, encoding='utf-8').read()
+    bm, data = extract(base_html)
     if data is None:
         print('ERROR: could not find embedded DATA in %s' % BASE); sys.exit(1)
 
@@ -69,16 +69,27 @@ def main():
     }
     total = data['stats']['total']
     brands = len({f['mfr'] for f in data['fixtures']})
-
     payload = json.dumps(data, ensure_ascii=False).replace('</', '<\\/')
-    new_html = html[:m.start(1)] + payload + html[m.end(1):]
+
+    # Prefer the separate UI template (so UI changes don't need a big upload).
+    # Fall back to re-injecting into the base app's own shell if it's absent.
+    if os.path.exists(TEMPLATE):
+        tpl = open(TEMPLATE, encoding='utf-8').read()
+        if '__DATA__' not in tpl:
+            print('ERROR: %s has no __DATA__ placeholder' % TEMPLATE); sys.exit(1)
+        new_html = tpl.replace('__DATA__', payload)
+        shell = TEMPLATE
+    else:
+        new_html = base_html[:bm.start(1)] + payload + base_html[bm.end(1):]
+        shell = BASE
+
     new_html = re.sub(r'\d+ fixtures across \d+ manufacturers',
                       '%d fixtures across %d manufacturers' % (total, brands), new_html)
     new_html = re.sub(r'\d+ fixtures, \d+ manufacturers',
                       '%d fixtures, %d manufacturers' % (total, brands), new_html)
 
     open(OUT, 'w', encoding='utf-8').write(new_html)
-    print('Built %s: %d fixtures (%d added this run), %d brands.' % (OUT, total, added, brands))
+    print('Built %s from %s: %d fixtures (%d added this run), %d brands.' % (OUT, shell, total, added, brands))
 
 if __name__ == '__main__':
     main()
