@@ -8,6 +8,7 @@ BASE = 'index_2.html'       # frozen base app — data source (bulk library)
 TEMPLATE = 'template.html'  # app shell with a __DATA__ placeholder (the UI)
 OUT = 'index.html'          # generated full app served by Pages
 ADDS = 'new-fixtures.json'  # small list of custom additions (the "inbox")
+MYGEAR = 'my-gear.json'     # authoritative list of fixtures flagged as "my gear"
 
 def norm(s):
     s = (s or '').lower()
@@ -58,6 +59,22 @@ def main():
             continue
         data['fixtures'].append(normalize_entry(nf))
         existing.add(key); added += 1
+
+    # Apply the "my gear" overlay: when my-gear.json is a non-empty list, it is
+    # the single source of truth for which fixtures are flagged as Ethan's gear.
+    # (Empty/missing = leave the baked-in flags untouched, so a stray empty file
+    # can never silently wipe the whole list.)
+    if os.path.exists(MYGEAR):
+        try:
+            mg = json.load(open(MYGEAR, encoding='utf-8'))
+        except Exception as e:
+            print('WARN: %s ignored (not valid JSON: %s)' % (MYGEAR, e)); mg = None
+        if isinstance(mg, list) and mg:
+            gearset = {(norm(x.get('mfr', '')), norm(x.get('model', '')))
+                       for x in mg if x.get('mfr') and x.get('model')}
+            for f in data['fixtures']:
+                f['mine'] = (norm(f['mfr']), norm(f['model'])) in gearset
+            print('Applied %s: %d fixtures flagged as my gear.' % (MYGEAR, len(gearset)))
 
     data['fixtures'].sort(key=lambda f: (not f['mine'], f['mfr'].lower(), f['model'].lower()))
     data['stats'] = {
