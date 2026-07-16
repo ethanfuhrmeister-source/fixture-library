@@ -5,6 +5,7 @@ on:
     paths:
       - new-fixtures.json
       - index_2.html
+      - template.html
       - build.py
       - .github/workflows/build.yml
 permissions:
