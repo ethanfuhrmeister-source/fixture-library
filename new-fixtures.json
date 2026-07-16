@@ -1,0 +1,14 @@
+[
+  {"mfr":"Chauvet Professional","model":"COLORado PXL Curve 12","type":"LED Strip / Batten",
+   "modes":[{"name":"20-channel","count":20},{"name":"53-channel","count":53},{"name":"101-channel","count":101},{"name":"155-channel","count":155},{"name":"179-channel","count":179}],
+   "sourceUrl":"https://chauvetprofessional.com/product/colorado-pxl-curve-12/","confidence":"high",
+   "note":"IP65 motorized RGBW pixel batten — 12 individually zooming/tilting heads (45W each). Higher modes are pixel-mapping footprints."},
+  {"mfr":"Chauvet Professional","model":"COLORado PXL Curve 1","type":"LED Strip / Batten",
+   "modes":[{"name":"24-channel","count":24},{"name":"31-channel","count":31},{"name":"37-channel","count":37},{"name":"39-channel","count":39},{"name":"71-channel","count":71}],
+   "sourceUrl":"https://chauvetprofessional.com/product/colorado-pxl-curve-1/","confidence":"medium",
+   "note":"IP65 arrayable batten — 1x 120W RGBW cell + 160 SMD strobe LEDs, 9 pixel zones, motorized pan/tilt/zoom. Sources vary on personalities (Chauvet lists 24/45; B&H lists 24/31/37/39/71) — confirm on your console."},
+  {"mfr":"Robe","model":"Robin GigaPointe","type":"Moving Head",
+   "modes":[{"name":"Mode 1 (MegaPointe compatible)","count":39},{"name":"Mode 2 (Advanced)","count":41}],
+   "sourceUrl":"https://www.robe.cz/robin-gigapointe","confidence":"medium",
+   "note":"IP65 beam/spot hybrid with LSW-3 350W white laser source (7000K). Mode 1 is MegaPointe-compatible; verify exact personality against the manual."}
+]
