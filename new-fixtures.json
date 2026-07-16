@@ -76,27 +76,5 @@
     "sourceUrl": "https://www.robe.cz/robin-gigapointe",
     "confidence": "medium",
     "note": "IP65 beam/spot hybrid with LSW-3 350W white laser source (7000K). Mode 1 is MegaPointe-compatible; verify exact personality against the manual."
-  },
-  {
-    "mfr": "Ayrton",
-    "model": "Diablo TC",
-    "type": "Moving Head",
-    "modes": [
-      {
-        "name": "Basic",
-        "count": 34
-      },
-      {
-        "name": "Standard",
-        "count": 36
-      },
-      {
-        "name": "Extended",
-        "count": 65
-      }
-    ],
-    "sourceUrl": "https://www.ayrton.eu/wp-content/uploads/2020/03/Diablo-DMX-Chart_V203.pdf",
-    "confidence": "medium",
-    "note": "300W 7000K LED moving head profile, 7–53° zoom. Modes from Ayrton’s Diablo DMX chart (Basic 34 / Standard 36 / Extended 65); a dealer lists the TC top mode as ~56 — confirm the exact personality on your console."
   }
 ]
