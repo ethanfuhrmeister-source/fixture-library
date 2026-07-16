@@ -135,6 +135,13 @@
   .aifill:hover{opacity:.9}
   .aifill:disabled{opacity:.5; cursor:default}
   .gear{border:1px solid var(--chipline); background:var(--chip); color:var(--fg); border-radius:8px; padding:5px 10px; font-size:12px; cursor:pointer; white-space:nowrap; flex:none}
+  .gearbtn{flex:none; align-self:center; border:1px solid var(--chipline); background:var(--bg); color:var(--muted); border-radius:999px; padding:6px 12px; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap}
+  .gearbtn:hover{border-color:var(--fg); color:var(--fg)}
+  .gearbtn.on{background:var(--accent); color:var(--accentfg); border-color:var(--accent)}
+  .pubta{width:100%; min-height:120px; font:12px/1.4 ui-monospace,Menlo,Consolas,monospace; color:var(--fg); background:var(--chip); border:1px solid var(--chipline); border-radius:9px; padding:10px; outline:none; resize:vertical; white-space:pre; overflow:auto}
+  .publist{max-height:160px; overflow:auto; border:1px solid var(--line); border-radius:9px; padding:8px 10px; font-size:13px; margin:0 0 12px}
+  .publist div{padding:2px 0; color:var(--muted)}
+  .pubstep{font-size:13px; color:var(--fg); margin:14px 0 0; line-height:1.55}
   .aiset{display:none; margin:4px 0 14px; padding:12px; border:1px solid var(--chipline); border-radius:10px; background:var(--chip)}
   .aiset.show{display:block}
   .aiset .field{margin-bottom:10px}
@@ -181,6 +188,7 @@
       <label class="toggle"><input type="checkbox" id="mine"><span class="dot"></span>My gear</label>
       <button class="btn" id="rigsbtn">Rigs</button>
       <button class="btn ghost" id="add">+ Add fixture</button>
+      <button class="btn ghost" id="pubgear" title="Publish your gear list to the site so all your devices see it">↥ Publish gear</button>
       <button class="btn ghost" id="export" title="Download your added fixtures as data">Export</button>
     </div>
     <div class="count wrap" style="padding-left:0;padding-right:0"><span id="count"></span></div>
@@ -270,6 +278,29 @@
     </div>
   </div>
 </div>
+
+<div class="overlay" id="puboverlay">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modhead">
+      <div>
+        <h2>Publish my gear</h2>
+        <p class="mh">Sync the fixtures you've flagged as your gear to the site, so every device shows the same list.</p>
+      </div>
+      <button class="gear" id="pubclose" type="button">✕ Close</button>
+    </div>
+    <div id="pubsummary" class="mh" style="color:var(--fg)"></div>
+    <div class="publist" id="publist"></div>
+    <div class="field">
+      <label>my-gear.json</label>
+      <textarea class="pubta" id="pubjson" readonly spellcheck="false"></textarea>
+    </div>
+    <div class="modActions" style="justify-content:flex-start">
+      <button class="btn" id="pubcopy" type="button">Copy JSON</button>
+      <button class="btn ghost" id="pubopen" type="button">Open GitHub editor ↗</button>
+    </div>
+    <p class="pubstep">To publish: tap <b>Copy JSON</b> → <b>Open GitHub editor</b> → in the file, select all, paste, then <b>Commit changes</b>. Your other devices pick it up within about a minute.</p>
+  </div>
+</div>
 <script>
 const DATA = __DATA__;
 const $ = s => document.querySelector(s);
@@ -289,6 +320,21 @@ let fmap = {};
 function rebuild(){ F = userAdded.concat(DATA.fixtures); fmap = {}; F.forEach(f=>{ fmap[f.mfr+'|'+f.model]=f; }); }
 rebuild();
 
+/* ---------- My gear: instant local overlay on top of the baked-in flags ---------- */
+const GEARKEY='fixtureLibrary.gear.v1';
+function loadGear(){ try{ const g=JSON.parse(localStorage.getItem(GEARKEY)); if(g&&Array.isArray(g.add)&&Array.isArray(g.remove)) return g; }catch(e){} return {add:[],remove:[]}; }
+let gearState = loadGear();
+const gearAdd = new Set(gearState.add), gearRemove = new Set(gearState.remove);
+function saveGear(){ try{ localStorage.setItem(GEARKEY, JSON.stringify({add:[...gearAdd], remove:[...gearRemove]})); }catch(e){} }
+// effective "is this my gear?" — local star wins over the baked flag
+function isMine(f){ const id=f.mfr+'|'+f.model; if(gearAdd.has(id)) return true; if(gearRemove.has(id)) return false; return !!f.mine; }
+function toggleGear(id){
+  const f=fmap[id]; if(!f) return;
+  if(isMine(f)){ gearAdd.delete(id); if(f.mine) gearRemove.add(id); }
+  else { gearRemove.delete(id); if(!f.mine) gearAdd.add(id); }
+  saveGear();
+}
+
 // build filter options (recomputed so newly added manufacturers appear)
 function buildFilters(){
   const mfrs = [...new Set(F.map(f=>f.mfr))].sort((a,b)=>a.toLowerCase()<b.toLowerCase()?-1:1);
@@ -297,7 +343,7 @@ function buildFilters(){
   $('#mfr').innerHTML = '<option value="">All manufacturers</option>' + mfrs.map(m=>`<option ${m===curM?'selected':''}>${esc(m)}</option>`).join('');
   $('#type').innerHTML = '<option value="">All types</option>' + types.map(t=>`<option ${t===curT?'selected':''}>${esc(t)}</option>`).join('');
   $('#mfrlist').innerHTML = mfrs.map(m=>`<option value="${esc(m)}">`).join('');
-  const total = F.length, mine = F.filter(f=>f.mine).length;
+  const total = F.length, mine = F.filter(f=>isMine(f)).length;
   const added = userAdded.length ? ` · ${userAdded.length} you added` : '';
   $('#sub').textContent = `${total} fixtures · ${mine} on your list · ${mfrs.length} manufacturers${added}`;
 }
@@ -312,7 +358,7 @@ function render(){
   let rows = F.filter(f=>{
     if(state.mfr && f.mfr!==state.mfr) return false;
     if(state.type && f.type!==state.type) return false;
-    if(state.mine && !f.mine) return false;
+    if(state.mine && !isMine(f)) return false;
     if(q){ const hay=(f.mfr+' '+f.model+' '+f.type).toLowerCase(); if(!hay.includes(q)) return false; }
     return true;
   });
@@ -331,19 +377,21 @@ function render(){
     const open = openSet.has(id);
     const modesInline = f.modes.map(m=>`<span class="mode">${esc(m.name)} · <b>${m.count}ch</b></span>`).join('');
     const confTag = (f.confidence!=='high' && (!f.userAdded || f.aiGenerated)) ? `<span class="tag conf-${f.confidence}">${f.confidence} confidence</span>` : '';
-    const mineTag = f.mine ? '<span class="tag mine">My gear</span>' : '';
+    const mine = isMine(f);
+    const mineTag = mine ? '<span class="tag mine">My gear</span>' : '';
     const srcLabel = f.source==='Open Fixture Library'?'OFL verified':(f.source==='QLC+ library'?'QLC+ library':'Mfr. spec');
     const srcTag = f.aiGenerated ? '<span class="tag added">AI draft — verify</span>'
       : f.userAdded ? '<span class="tag added">Added by you</span>'
       : `<span class="tag">${srcLabel}</span>`;
     const rigModeOpts = f.modes.map((m,mi)=>`<option value="${mi}">${esc(m.name)} · ${m.count}ch</option>`).join('');
-    return `<div class="card ${f.mine?'mine':''} ${open?'open':''}" data-id="${esc(id)}">
+    return `<div class="card ${mine?'mine':''} ${open?'open':''}" data-id="${esc(id)}">
       <div class="chead" data-toggle>
         <div class="cmeta">
           <div class="cmodel">${hl(f.model,qraw)}</div>
           <div class="cmfr">${hl(f.mfr,qraw)}</div>
           <div class="tags">${mineTag}<span class="tag type">${esc(f.type)}</span>${srcTag}${confTag}</div>
         </div>
+        <button class="gearbtn ${mine?'on':''}" data-gear="${esc(id)}" title="${mine?'Remove from your gear':'Add to your gear'}">${mine?'★ My gear':'☆ Add'}</button>
         <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
       </div>
       <div class="cbody">
@@ -388,10 +436,18 @@ $('#mfr').addEventListener('change', e=>{state.mfr=e.target.value; render()});
 $('#type').addEventListener('change', e=>{state.type=e.target.value; render()});
 $('#mine').addEventListener('change', e=>{state.mine=e.target.checked; render()});
 $('#list').addEventListener('click', e=>{
+  if(e.target.closest('[data-gear]')) return;
   const head = e.target.closest('[data-toggle]'); if(!head) return;
   const card = head.closest('.card'); const id=card.dataset.id;
   if(openSet.has(id)) openSet.delete(id); else openSet.add(id);
   card.classList.toggle('open');
+});
+// star toggle — add/remove a fixture from your gear, instantly
+$('#list').addEventListener('click', e=>{
+  const g = e.target.closest('[data-gear]'); if(!g) return;
+  e.stopPropagation();
+  toggleGear(g.getAttribute('data-gear'));
+  buildFilters(); render();
 });
 $('#list').addEventListener('click', e=>{
   const del = e.target.closest('[data-del]'); if(!del) return;
@@ -435,7 +491,7 @@ function showErr(m){ const e=$('#err'); e.textContent=m; e.classList.add('show')
 $('#add').addEventListener('click', openModal);
 $('#cancel').addEventListener('click', closeModal);
 $('#overlay').addEventListener('click', e=>{ if(e.target===$('#overlay')) closeModal(); });
-document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeModal(); closeRig(); } });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeModal(); closeRig(); closePub(); } });
 $('#addmode').addEventListener('click', ()=> $('#moderows').appendChild(modeRow()));
 $('#f_type').addEventListener('change', function(){
   if(this.value==='__other'){
@@ -620,12 +676,38 @@ $('#list').addEventListener('click', e=>{
 /* ---------- Export ---------- */
 $('#export').addEventListener('click', ()=>{
   const payload={generated:new Date().toISOString().slice(0,10), yourAddedFixtures:userAdded,
-    fullLibrary:F.map(f=>({mfr:f.mfr,model:f.model,type:f.type,mine:f.mine,source:f.source,
+    fullLibrary:F.map(f=>({mfr:f.mfr,model:f.model,type:f.type,mine:isMine(f),source:f.source,
       modes:f.modes.map(m=>({name:m.name,count:m.count}))}))};
   const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
   a.download='fixture-library-export.json'; a.click(); URL.revokeObjectURL(a.href);
 });
+
+/* ---------- Publish my gear (authoritative list → my-gear.json on the site) ---------- */
+const GH_GEAR_URL='https://github.com/ethanfuhrmeister-source/fixture-library/edit/main/my-gear.json';
+function myGearList(){ return DATA.fixtures.filter(f=>isMine(f)).map(f=>({mfr:f.mfr, model:f.model})); }
+function openPub(){
+  const list=myGearList();
+  $('#pubjson').value = JSON.stringify(list, null, 2);
+  $('#pubsummary').textContent = list.length
+    ? list.length+' fixture'+(list.length===1?'':'s')+' flagged as your gear — this is the full list your other devices will use.'
+    : 'No gear flagged yet.';
+  const preview = list.slice(0,60).map(f=>`<div>${esc(f.mfr)} — ${esc(f.model)}</div>`).join('')
+    + (list.length>60?`<div>…and ${list.length-60} more</div>`:'');
+  $('#publist').innerHTML = list.length ? preview : '<div>Star some fixtures first (☆ Add), then publish.</div>';
+  $('#puboverlay').classList.add('show');
+}
+function closePub(){ $('#puboverlay').classList.remove('show'); }
+$('#pubgear').addEventListener('click', openPub);
+$('#pubclose').addEventListener('click', closePub);
+$('#puboverlay').addEventListener('click', e=>{ if(e.target===$('#puboverlay')) closePub(); });
+$('#pubcopy').addEventListener('click', async ()=>{
+  const b=$('#pubcopy');
+  try{ await navigator.clipboard.writeText($('#pubjson').value); }
+  catch(e){ $('#pubjson').select(); try{document.execCommand('copy');}catch(_){}}
+  const o=b.textContent; b.textContent='Copied ✓'; setTimeout(()=>{b.textContent=o;}, 1200);
+});
+$('#pubopen').addEventListener('click', ()=> window.open(GH_GEAR_URL, '_blank', 'noopener'));
 
 updateRigBtn();
 render();
